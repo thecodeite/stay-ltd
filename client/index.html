@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html ng-app="stay-ltd">
+  <head>
+    <script src="libs/amcharts/amcharts.js" ></script>
+    <script src="libs/amcharts/serial.js" ></script>
+
+    <script src="calc-paye.js" ></script>
+    <script src="calc-ltd.js"></script>
+
+    <script src="components/angularjs/angular.js"></script>
+    <script src="app.js"></script>
+    <script src="chart-data.js"></script>
+    <script src="chart.js"></script>
+    
+  </head>
+
+  <body ng-controller="graphController">
+    <h1>Stay Limited?</h1>
+    <div id="chartdiv" style="width: 800px; height: 400px;"></div>
+
+    <div>
+      Show as percentage of gross: <input type="checkbox" ng-model="options.asPercent" ng-change="updateGraph()" />
+    </div>
+    <div>
+      Expences: <input ng-model="options.expences" type="number" step="100" ng-change="updateGraph()" />
+    </div>
+
+    <div>
+      Costs: <input ng-model="options.costs" type="number" step="100" ng-change="updateGraph()" />
+    </div>
+
+  </body>
+</html>

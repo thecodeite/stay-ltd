@@ -1,0 +1,99 @@
+<DOCTYPE html>
+<html>
+  <head>
+    <script src="libs/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="libs/amcharts/serial.js" type="text/javascript"></script>
+    <script src="calc-paye.js" type="text/javascript"></script>
+  </head>
+
+  <body>
+    <h1>Stay Limmited?</h1>
+    <div id="chartdiv" style="width: 640px; height: 400px;"></div>
+
+    <script type="text/javascript">
+
+  var chartData = [];
+
+  for(var gross = 0; gross<=150000; gross+=5000) {
+
+    var tax = calcPaye.calcIncomeTax(gross*100, 0, {yearEnd: 2015});
+    var incomeTax = tax.totalPersonalTax / 100;
+    
+    var ni = calcPaye.calcEmployeeNi(gross*100);
+    var niContribution = ni.total / 100;
+ 
+    var takeHome = gross - incomeTax - niContribution;
+    var grossString = gross.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+    grossString = grossString.substr(0, grossString.length-3);
+
+    chartData.push({
+      gross: grossString,
+      incomeTax: incomeTax,
+      niContribution: niContribution,
+      takeHome: takeHome
+    });
+  }
+  console.log('chartData', chartData);
+
+  AmCharts.ready(function() {
+
+    var chart = AmCharts.makeChart("chartdiv", {
+    "type": "serial",
+    "theme": "light",
+    "marginRight":30,
+    "legend": {
+        "equalWidths": false,
+        "periodValueText": "total: [[value.sum]]",
+        "position": "top",
+        "valueAlign": "left",
+        "valueWidth": 100
+    },
+    "dataProvider": chartData,
+    "valueAxes": [{
+        "stackType": "regular",
+        "gridAlpha": 0.07,
+        "position": "left",
+        "title": "BGP"
+    }],
+    "graphs": [{
+        "fillAlphas": 0.6,
+        "lineAlpha": 0.4,
+        "title": "Take home",
+        "valueField": "takeHome"
+    }, {
+        "fillAlphas": 0.6,
+        "lineAlpha": 0.4,
+        "title": "Income Tax",
+        "valueField": "incomeTax"
+    }, {
+        "fillAlphas": 0.6,
+        "lineAlpha": 0.4,
+        "title": "NI Contribution",
+        "valueField": "niContribution"
+    }],
+    "plotAreaBorderAlpha": 0,
+    "marginTop": 10,
+    "marginLeft": 0,
+    "marginBottom": 0,
+    "chartScrollbar": {},
+    "chartCursor": {
+        "cursorAlpha": 0
+    },
+    "categoryField": "gross",
+    "categoryAxis": {
+        "startOnAxis": true,
+        "axisColor": "#DADADA",
+        "gridAlpha": 0.07,
+        "title": "Gross Pay"
+    },
+    "export": {
+      "enabled": true
+     }
+});
+
+    chart.write('chartdiv');
+  });
+
+</script>
+  </body>
+</html>
