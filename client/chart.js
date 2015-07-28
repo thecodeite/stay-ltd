@@ -17,19 +17,21 @@ angular.module('stay-ltd')
       }],
       "graphs": [{
         "fillAlphas": 0.06,
-        "lineAlpha": 0.4,
+        "lineAlpha": 1,
         "title": "PAYE",
         "valueField": "paye",
         "balloonText": "[[description]]",
         "descriptionField": "payeBreakdown"
       }, {
         "fillAlphas": 0.06,
-        "lineAlpha": 0.4,
+        "lineAlpha": 1,
         "title": "Limited Company",
-        "valueField": "ltd"
+        "valueField": "ltd",
+        "balloonText": "[[description]]",
+        "descriptionField": "ltdBreakdown"
       }, {
         "fillAlphas": 0.06,
-        "lineAlpha": 0.4,
+        "lineAlpha": 1,
         "title": "Umbrella",
         "valueField": "umbrella",
         "balloonText": "[[description]]",
@@ -48,7 +50,7 @@ angular.module('stay-ltd')
         "startOnAxis": true,
         "axisColor": "#DADADA",
         "gridAlpha": 0.07,
-        "title": "Gross Pay"
+        "title": "Gross Pay/Turnover"
       },
       "export": {
         "enabled": true

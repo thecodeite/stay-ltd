@@ -62,6 +62,7 @@
     res.dispursable = profit - corpTax;
 
     var takenAsDividend = res.dispursable;
+    res.takenAsDividend = takenAsDividend;
 
     var incomeTax = calcPaye.calcIncomeTax(takenAsSalary, takenAsDividend, options);
     var employeeNi = calcPaye.calcEmployeeNi(takenAsSalary, options);
@@ -114,6 +115,8 @@
     if(options.umbrellaFixedFeePerMonth) {
       overhead += options.umbrellaFixedFeePerMonth * 12;
     }
+
+    overhead = Math.min(overhead, revenue);
 
     var companyTax = calc(revenue, {
       costs: overhead,

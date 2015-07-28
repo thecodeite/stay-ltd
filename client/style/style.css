@@ -1,0 +1,9 @@
+.chart-input span {
+  display: inline-block;
+  width: 12em;
+  text-align: right;
+}
+
+.chart-input input {
+  text-align: right;
+}

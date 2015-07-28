@@ -117,9 +117,9 @@
       higherRate:     40, //%
       topRate:        45, //%
 
-      divOrdinaryRate:   0.075,   //%
-      divUpperRate:      0.325,   //%
-      divAdditionalRate: 0.381,   //%
+      divOrdinaryRate:   7.5,   //%
+      divUpperRate:      32.5,   //%
+      divAdditionalRate: 38.1,   //%
 
       basicBandLimit:  31785*100,  //£
       higherBandLimit: 150000*100, //£
