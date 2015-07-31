@@ -49,7 +49,7 @@ angular.module('stay-ltd', ['ngStorage'])
           asPercent: true,
           salary: 9600,
           costs: 3000,
-          expences: 0
+          expenses: 0
         });
   }
 }]);

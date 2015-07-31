@@ -34,7 +34,7 @@ angular.module('stay-ltd').factory('generateChartData', [
           yearEnd: options.yearEnd,
           salary: options.salary*100,
           costs: options.costs*100, 
-          expences: options.expences*100
+          expenses: options.expenses*100
         });
         var ltd = tldCalc.takeHome / 100;
         //console.log(tldCalc, ltd);

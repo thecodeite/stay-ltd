@@ -30,19 +30,19 @@
     var res = {};
 
     if(options === undefined) options = {};
-    if(options.expences === undefined) options.expences = 0;//240000;
+    if(options.expenses === undefined) options.expenses = 0;//240000;
     if(options.costs === undefined) options.costs = 0;//240000;
     if(options.salary === undefined) options.salary = 583200;
     
 
-    // split up income into three streams [salary, expences, dividends]
+    // split up income into three streams [salary, expenses, dividends]
     var profit = revenue;
 
     var paiedAsCosts = Math.min(profit, options.costs);
     profit -=  paiedAsCosts;
 
-    var takenAsExpences = Math.min(profit, options.expences);
-    profit -=  takenAsExpences;
+    var takenAsExpenses = Math.min(profit, options.expenses);
+    profit -=  takenAsExpenses;
 
     var maxSalary = calcPaye.calcMaxSalary(profit, options);
     var takenAsSalary = Math.min(profit, options.salary, maxSalary);
@@ -74,16 +74,16 @@
       corpTax: corpTax,
       employerNi: employerNi.total
     };
-    res.takeHome = incomeTax.takeHome + takenAsExpences - employeeNi.total;
+    res.takeHome = incomeTax.takeHome + takenAsExpenses - employeeNi.total;
     res.profit = profit;
     res.incomeTaxBreakdown = incomeTax;
     res.employeeNiBreakdown = employeeNi;
     res.companyBreakdown = {
       overheads: {
         costs: paiedAsCosts,
-        expences: takenAsExpences,
+        expenses: takenAsExpenses,
         nationalInsurance: employerNi.total,
-        total: paiedAsCosts + takenAsExpences + employerNi.total
+        total: paiedAsCosts + takenAsExpenses + employerNi.total
       },
       salaries : {
         emplyees: [takenAsSalary],
