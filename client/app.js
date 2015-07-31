@@ -5,7 +5,7 @@ angular.module('stay-ltd', ['ngStorage'])
       $scope.$storage = $localStorage.$default({
         options: defaultOptions()
       });
-
+      
       $scope.options = $scope.$storage.options;
 
       $scope.chart = buildChart();
@@ -41,7 +41,7 @@ angular.module('stay-ltd', ['ngStorage'])
 }).factory('defaultOptions', [function() {
   
   return function() {
-    return Object.create({
+    return {
           start: 1000,
           end:  150000,
           step:   5000,
@@ -50,6 +50,6 @@ angular.module('stay-ltd', ['ngStorage'])
           salary: 9600,
           costs: 3000,
           expenses: 0
-        });
+        };
   }
-}]);
+  }]);
