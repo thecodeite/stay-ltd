@@ -3,6 +3,7 @@
   var exports = {
     calcPaye: calcPaye,
     calcIncomeTax: calcIncomeTax,
+    calcEmployeeTakehome: calcEmployeeTakehome,
     calcEmployeeNi: calcEmployeeNi,
     calcEmployerNi: calcEmployerNi,
     calcMaxSalary: calcMaxSalary,
@@ -51,8 +52,13 @@
 
         primaryRate: 12, //%
         upperEarningsRate: 2 //%
+      },
+
+      studentLoan: {
+        threshold: 1636500, //£
+        rate: 9             //%
       }
-    }, 
+    },
     2015: {
       basicRate:      20, //%
       higherRate:     40, //%
@@ -80,6 +86,11 @@
 
         primaryRate: 12, //%
         upperEarningsRate: 2 //%
+      },
+
+      studentLoan: {
+        threshold: 1691000, //£
+        rate: 9             //%
       }
     },
     2016: {
@@ -109,8 +120,12 @@
 
         primaryRate: 12, //%
         upperEarningsRate: 2 //%
-      }
+      },
 
+      studentLoan: {
+        threshold: 1733500, //£
+        rate: 9             //%
+      }
     },
     2017: {
       basicRate:      20, //%
@@ -147,12 +162,28 @@
   function defaultOptions(options) {
     if (options === undefined) options = {};
     if (options.yearEnd === undefined) options.yearEnd = 2016;
+    if (options.studentLoanRemaining === undefined) options.studentLoanRemaining = 0;
 
     return options;
   }
 
   function minZero(x) {
     return x < 0 ? 0 : x;
+  }
+
+  function calcEmployeeTakehome(grossSalary, options) {
+    options = defaultOptions(options);
+
+    var incomeTax = calcIncomeTax(grossSalary, 0, options);
+    var ni = calcEmployeeNi(grossSalary, options);
+    var takeHome = incomeTax.takeHome - ni.total;
+
+    return {
+      takeHome: takeHome,
+      totalTax: grossSalary - takeHome,
+      incomeTax: incomeTax,
+      ni: ni
+    };
   }
 
 
@@ -182,7 +213,7 @@
 
     tax.grossTaxableIncome = effectiveDividend + salaryIncome;
 
-    tax.personalAllowance = calcPersonalAllowance(tax.grossTaxableIncome, options);  
+    tax.personalAllowance = calcPersonalAllowance(tax.grossTaxableIncome, options);
 
     var higherLimit = rates.higherBandLimit - tax.personalAllowance - rates.basicBandLimit;
     var bands = [tax.personalAllowance, rates.basicBandLimit, higherLimit];
@@ -191,7 +222,7 @@
     var personalAllowanceLeft = tax.personalAllowance;
     var basicRateLeft = rates.basicBandLimit;
     var higherRateLeft = rates.basicBandLimit;
-     
+
     tax.bands.basicRateSalary.amount = bd[1];
     tax.bands.higherRateSalary.amount = bd[2];
     tax.bands.topRateSalary.amount = bd[3];
@@ -199,9 +230,9 @@
     tax.bands.basicRateSalary.tax = Math.floor((tax.bands.basicRateSalary.amount  * rates.basicRate)/100);
     tax.bands.higherRateSalary.tax = Math.floor((tax.bands.higherRateSalary.amount  * rates.higherRate)/100);
     tax.bands.topRateSalary.tax = Math.floor((tax.bands.topRateSalary.amount  * rates.topRate)/100);
-    tax.incomeTax = tax.bands.basicRateSalary.tax
-      + tax.bands.higherRateSalary.tax
-      + tax.bands.topRateSalary.tax
+    tax.incomeTax = tax.bands.basicRateSalary.tax +
+      tax.bands.higherRateSalary.tax +
+      tax.bands.topRateSalary.tax;
 
     var bd2 = breakdown(tax.grossTaxableIncome, bands);
     var bd3 = subtractBreakdown(bd2, bd);
@@ -218,16 +249,16 @@
     tax.bands.basicRateDividend.tax = Math.floor((tax.bands.basicRateDividend.amount  * rates.divOrdinaryRate)/100);
     tax.bands.higherRateDividend.tax = Math.floor((tax.bands.higherRateDividend.amount  * rates.divUpperRate)/100);
     tax.bands.topRateDividend.tax = Math.floor((tax.bands.topRateDividend.amount  * rates.divAdditionalRate)/100);
-    
+
     tax.dividendTaxCredit = Math.floor(((effectiveDividend-bd3[0]) * rates.dividendTaxCredit)/100);
     //console.log('tax.dividendTaxCredit', tax.dividendTaxCredit);
-    tax.dividendTax = 
-      tax.bands.basicRateDividend.tax
-      + tax.bands.higherRateDividend.tax
-      + tax.bands.topRateDividend.tax
-      - tax.dividendTaxCredit;
+    tax.dividendTax =
+      tax.bands.basicRateDividend.tax +
+        tax.bands.higherRateDividend.tax +
+        tax.bands.topRateDividend.tax -
+        tax.dividendTaxCredit;
   /*
-    
+
     var bands = [personalAllowance, rates.basicBandLimit, higherLimit];
     var bd = breakdown(totalEarnings, bands);
 
@@ -235,13 +266,27 @@
     var higherRate = bd[2] * (rates.divUpperRate - rates.divOrdinaryRate);
     var topRate = bd[3] * (rates.divAdditionalRate - rates.divOrdinaryRate);
   */
-    
-    tax.totalPersonalTax = Math.floor(tax.incomeTax + tax.dividendTax);
-    tax.takeHome = salaryIncome + dividendIncome - tax.totalPersonalTax;
+
+    // ------ Student Loans ------
+    var sl = tax.studentLoanRepayment = {};
+    if(options.studentLoanRemaining <= 0) {
+      sl.total = 0;
+    } else {
+      var incomeOnWhichRepaymentIsCalculated
+        = minZero(tax.grossTaxableIncome - rates.studentLoan.threshold);
+
+      var total = (incomeOnWhichRepaymentIsCalculated * rates.studentLoan.rate)/100;
+      sl.repayableOn = incomeOnWhichRepaymentIsCalculated;
+      sl.total = Math.floor(total/100)*100;
+      sl.total = Math.min(options.studentLoanRemaining, sl.total);
+    }
+
+    tax.totalPersonalTax = Math.floor(tax.incomeTax + tax.dividendTax + sl.total);
+    tax.takeHome = salaryIncome + dividendIncome - tax.totalPersonalTax - sl.total;
       //+ ordinaryRateDiv
       //+ higherRateDiv
       //+ topRateDiv
-      ;
+      
 
       //console.log(tax);
     return tax;
@@ -351,7 +396,7 @@
     var bands = [personalAllowance, basicLimit, higherLimit];
     var bd = breakdown(annualIncome, bands);
     //console.log(bd);
-    
+
     var atBasicRate = bd[1];
     var atHigherRate = bd[2];
     var atTopRate = bd[3];

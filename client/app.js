@@ -24,6 +24,10 @@ angular.module('stay-ltd', ['ngStorage'])
         $scope.updateGraph();
       };
 
+      $scope.detail = {
+        gross: 0
+      };
+
     
     }])
   .directive('convertToNumber', function() {
@@ -46,6 +50,7 @@ angular.module('stay-ltd', ['ngStorage'])
           end:  150000,
           step:   5000,
           yearEnd: 2016,
+          studentLoanRemaining: 0,
           asPercent: true,
           salary: 9600,
           costs: 3000,

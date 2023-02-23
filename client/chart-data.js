@@ -21,37 +21,43 @@ angular.module('stay-ltd').factory('generateChartData', [
 
       for(var gross = options.start; gross<=options.end; gross+=Math.max(options.step, 100)) {
         if(gross === 0){gross = 1;}
-        var tax = calcPaye.calcIncomeTax(gross*100, 0, {yearEnd: options.yearEnd});
-        var incomeTax = tax.totalPersonalTax / 100;
+        var employee = calcPaye.calcEmployeeTakehome(gross*100, {
+          yearEnd: options.yearEnd,
+          studentLoanRemaining: (options.studentLoanRemaining||0)*100
+        });
+        //var incomeTax = tax.totalPersonalTax / 100;
         
-        var ni = calcPaye.calcEmployeeNi(gross*100, {yearEnd: options.yearEnd});
-        var niContribution = ni.total / 100;
+        //var ni = calcPaye.calcEmployeeNi(gross*100, {yearEnd: options.yearEnd});
+        //var niContribution = ni.total / 100;
      
-        var paye = gross - incomeTax - niContribution;
-        var grossString = formatCurrency(gross);
+        //var paye = gross - incomeTax - niContribution;
+        //var paye  = employee.takeHome;
 
         var tldCalc = calcLtd.calc(gross*100, {
           yearEnd: options.yearEnd,
           salary: options.salary*100,
           costs: options.costs*100, 
-          expenses: options.expenses*100
+          expenses: options.expenses*100,
+          studentLoanRemaining: (options.studentLoanRemaining||0)*100
         });
         var ltd = tldCalc.takeHome / 100;
         //console.log(tldCalc, ltd);
 
         var umbrellaFee = 52*20*100;
         var umbrellaCalc = calcLtd.calcUmbrella(gross*100, {
-          umbrellaFixedFeePerWeek: 20 
+          yearEnd: options.yearEnd,
+          umbrellaFixedFeePerWeek: 20,
+          studentLoanRemaining: (options.studentLoanRemaining||0)*100
         });
         var umbrella = umbrellaCalc.takeHome/100;
         
         chartData.push({
-          gross: grossString,
-          paye: valueFunction(paye, gross),
-          payeBreakdown: asPercentOf(paye, gross) + "%" +
-          " net:&pound;"+formatCurrency(paye)+
-          " ni:&pound;"+formatCurrency(niContribution)+
-          " tax:&pound;"+formatCurrency(incomeTax),
+          gross: formatCurrency(gross),
+          paye: valueFunction(employee.takeHome / 100, gross),
+          payeBreakdown: asPercentOf(employee.takeHome / 100, gross) + "%" +
+            " net:&pound;"+formatCurrency(employee.takeHome / 100)+
+            " ni:&pound;"+formatCurrency(employee.ni.total / 100)+
+            " tax:&pound;"+formatCurrency(employee.incomeTax.total / 100),
           ltd: valueFunction(ltd, gross),
           ltdBreakdown: asPercentOf(ltd, gross) + "%" +
           " net:&pound;"+formatCurrency(ltd) +

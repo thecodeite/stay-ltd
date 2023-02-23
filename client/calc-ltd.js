@@ -118,10 +118,10 @@
 
     overhead = Math.min(overhead, revenue);
 
-    var companyTax = calc(revenue, {
-      costs: overhead,
-      salary: Infinity,
-    })
+    options.costs = overhead;
+    options.salary = Infinity;
+
+    var companyTax = calc(revenue, options);
 
     res.companyTax = companyTax;
 

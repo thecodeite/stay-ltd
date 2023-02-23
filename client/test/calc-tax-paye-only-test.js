@@ -4,7 +4,7 @@ var JsonFormater = require('../JsonFormater');
 
 chai.should();
 
-if(false) describe('calc-paye in 2015-16', function () {
+describe('calc-income tax in 2015-16', function () {
 
   describe('calcIncomeTax with only salary', function () {
 
@@ -91,7 +91,7 @@ if(false) describe('calc-paye in 2015-16', function () {
 
   describe('calcIncomeTax with salary + dividends', function () {
 
-    if(false)it('should give total tax as £0.00 for an income of £10,000.00 and net dividends of £10,000.00', function () {
+    it('should give total tax as £0.00 for an income of £10,000.00 and net dividends of £10,000.00', function () {
       var tax = calcPaye.calcIncomeTax(1000000, 1000000);
       
       tax.totalPersonalTax.should.equal(0);
@@ -99,7 +99,7 @@ if(false) describe('calc-paye in 2015-16', function () {
     });
 
 
-    if(false)it('should give total tax as £0.00 for an income of £10,060.00 and net dividends of £20,325.00', function () {
+    it('should give total tax as £0.00 for an income of £10,060.00 and net dividends of £20,325.00', function () {
       var tax = calcPaye.calcIncomeTax(1006000, 2032500);
       
       tax.totalPersonalTax.should.equal(0);
@@ -264,7 +264,7 @@ if(false) describe('calc-paye in 2015-16', function () {
   });
 });
 
-if(false) describe('Calculating maximum salary', function(){
+if(false) describe('Calculating maximum salary', function (){
   it('should equal profit when profit equal or less than £7,956', function() {
     calcPaye.calcMaxSalary(750000).should.equal(750000);
     calcPaye.calcMaxSalary(795600).should.equal(795600);
@@ -288,3 +288,65 @@ if(false) describe('Calculating maximum salary', function(){
     
   });
 });
+
+describe('Calculating student loan payment', function () {
+  var yearEnd = 2015;
+  var threshold = 1691000; // £16,910.00
+  var options;
+
+  beforeEach(function () {
+    options = {
+      yearEnd: yearEnd
+    }
+  });
+
+
+  it('should give 0 repayment if loan not specified', function () {
+    var tax = calcPaye.calcIncomeTax(1200000, 0);
+    tax.studentLoanRepayment.total.should.equal(0);
+  });
+
+  it('should give 0 repayment if loan is 0', function () {
+    options.studentLoanRemaining = 0;
+    var tax = calcPaye.calcIncomeTax(1200000, 0, options);
+    tax.studentLoanRepayment.total.should.equal(0);
+  });
+
+  it('should give 0 repayment if income is less than threshold', function () {
+    options.studentLoanRemaining = 1000;
+    var tax = calcPaye.calcIncomeTax(1200000, 0, options);
+    tax.studentLoanRepayment.total.should.equal(0);
+  });
+
+  it('should give 0 repayment if income is at threshold', function () {
+    options.studentLoanRemaining = 1000;
+    var tax = calcPaye.calcIncomeTax(threshold, 0, options);
+    tax.studentLoanRepayment.total.should.equal(0);
+  });
+
+  it('should give £9 repayment if income is £100 over threshold', function () {
+    options.studentLoanRemaining = 1000;
+    var tax = calcPaye.calcIncomeTax(threshold + 10000, 0, options);
+    tax.studentLoanRepayment.total.should.equal(900);
+  });
+
+  it('should give £4,258.00 repayment if income is £12k Salary + £47k Dividend in 2014/15', function () {
+    options.studentLoanRemaining = 500000;
+    var tax = calcPaye.calcIncomeTax(1200000, 4700000, options);
+    tax.studentLoanRepayment.total.should.equal(425800);
+  });
+
+  it('should give £2,807.00 repayment if income is £12k Salary + £32k Dividend in 2013/14', function () {
+    options.yearEnd = 2014;
+    options.studentLoanRemaining = 500000;
+    var tax = calcPaye.calcIncomeTax(1200000, 3200000, options);
+    tax.studentLoanRepayment.total.should.equal(280700);
+  });
+
+  it('should give not ask to pay more than is outstanding', function () {
+    options.studentLoanRemaining = 100000;
+    var tax = calcPaye.calcIncomeTax(12000000, 32000000, options);
+    tax.studentLoanRepayment.total.should.equal(100000);
+  });
+});
+
